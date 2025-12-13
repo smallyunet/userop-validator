@@ -1,0 +1,41 @@
+{
+  "name": "userop-validator",
+  "version": "0.0.1",
+  "description": "A robust ERC-4337 UserOperation validator compliant with EIP-7562",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "erc-4337",
+    "account-abstraction",
+    "ethereum",
+    "validator",
+    "eip-7562"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@ethereumjs/common": "^4.0.0",
+    "@ethereumjs/evm": "^2.0.0",
+    "@ethereumjs/util": "^4.0.0",
+    "@ethereumjs/vm": "^7.0.0",
+    "ethers": "^6.0.0"
+  }
+}

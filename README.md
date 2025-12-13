@@ -1,5 +1,8 @@
 # UserOp Validator
 
+[![npm version](https://img.shields.io/npm/v/userop-validator.svg)](https://www.npmjs.com/package/userop-validator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A robust ERC-4337 UserOperation validator compliant with EIP-7562.
 
 ## Overview
