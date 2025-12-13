@@ -42,7 +42,7 @@ export function validateExecutionRules(vm: VM, sender: Address): () => void {
         opcode === OPCODES.DIFFICULTY ||
         opcode === OPCODES.COINBASE
       ) {
-        throw new ValidationViolationError(`Opcode ${data.opcode.fullName} (${opcode}) is banned during validation.`);
+        throw new ValidationViolationError(`Opcode ${data.opcode.name} (${opcode}) is banned during validation.`);
       }
 
       // 2. Storage Rules
@@ -80,11 +80,11 @@ export function validateExecutionRules(vm: VM, sender: Address): () => void {
   };
 
   // Attach the listener
-  vm.evm.events.on('step', stepListener);
+  vm.evm.events?.on('step', stepListener);
 
   // Return cleanup function
   return () => {
-    vm.evm.events.removeListener('step', stepListener);
+    vm.evm.events?.removeListener('step', stepListener);
   };
 }
 
@@ -98,9 +98,9 @@ export async function runValidationExample(vm: VM, sender: Address, code: Buffer
   try {
     // 2. Run the call (simulating validation phase)
     // Note: In a real UserOp validation, you'd be calling 'validateUserOp' on the sender.
-    await vm.runCall({
+    await vm.evm.runCall({
       to: sender,
-      caller: Address.zero(), // EntryPoint
+      caller: new Address(new Uint8Array(20)), // EntryPoint
       data: code,
       gasLimit: BigInt(1000000),
     });
