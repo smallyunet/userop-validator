@@ -71,10 +71,45 @@ export function validateUserOpStructure(userOp: any): ValidationResult {
         errors.push(`Invalid preVerificationGas format: ${op.preVerificationGas}`);
     }
 
+    // 5. Gas Limit Validation
+    const gasLimitErrors = validateGasLimits(op);
+    errors.push(...gasLimitErrors);
+
     return {
         isValid: errors.length === 0,
         errors,
     };
+}
+
+function validateGasLimits(op: PackedUserOperation): string[] {
+    const errors: string[] = [];
+
+    // unpack accountGasLimits
+    // verificationGasLimit (16 bytes) | callGasLimit (16 bytes)
+    if (!isValidPackedUints(op.accountGasLimits)) {
+        errors.push(`Invalid accountGasLimits format: ${op.accountGasLimits}`);
+    }
+
+    // unpack gasFees
+    // maxPriorityFeePerGas (16 bytes) | maxFeePerGas (16 bytes)
+    if (!isValidPackedUints(op.gasFees)) {
+        errors.push(`Invalid gasFees format: ${op.gasFees}`);
+    }
+
+    // preVerificationGas check
+    // It should fit in uint256, but realistically much smaller.
+    // Here we just check it is a valid positive integer representation.
+    if (!isValidBigIntOrHex(op.preVerificationGas, true)) {
+        // Already checked, but specific logic could go here
+    }
+
+    return errors;
+}
+
+function isValidPackedUints(hex: string): boolean {
+    if (!isValidHexString(hex)) return false;
+    // Must be 32 bytes (64 chars) + '0x' = 66 chars
+    return hex.length === 66;
 }
 
 function isValidAddress(address: string): boolean {

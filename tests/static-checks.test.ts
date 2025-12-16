@@ -7,9 +7,9 @@ describe('validateUserOpStructure', () => {
         nonce: '0x0',
         initCode: '0x',
         callData: '0x',
-        accountGasLimits: '0x00000000000000000000000000000000',
+        accountGasLimits: '0x0000000000000000000000000000000000000000000000000000000000000000',
         preVerificationGas: '0x0',
-        gasFees: '0x00000000000000000000000000000000',
+        gasFees: '0x0000000000000000000000000000000000000000000000000000000000000000',
         paymasterAndData: '0x',
         signature: '0x'
     };
@@ -45,5 +45,19 @@ describe('validateUserOpStructure', () => {
         const result = validateUserOpStructure(invalidOp);
         expect(result.isValid).toBe(false);
         expect(result.errors[0]).toContain('Invalid hex string');
+    });
+
+    test('should fail if gas limits are invalid packed format', () => {
+        const invalidOp = { ...validUserOp, accountGasLimits: '0x123' }; // Too short, not 32 bytes
+        const result = validateUserOpStructure(invalidOp);
+        expect(result.isValid).toBe(false);
+        expect(result.errors.some(e => e.includes('Invalid accountGasLimits format'))).toBe(true);
+    });
+
+    test('should fail if gasFees are invalid packed format', () => {
+        const invalidOp = { ...validUserOp, gasFees: '0x123456' };
+        const result = validateUserOpStructure(invalidOp);
+        expect(result.isValid).toBe(false);
+        expect(result.errors[0]).toContain('Invalid gasFees format');
     });
 });
