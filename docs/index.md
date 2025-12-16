@@ -13,4 +13,4 @@ npm install userop-validator
 ## Contents
 
 - [Architecture](./architecture.md)
-- [Roadmap](../ROADMAP.md)
+- [Roadmap](./roadmap.md)

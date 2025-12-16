@@ -41,7 +41,7 @@ cleanup();
 
 ## Roadmap
 
-See [ROADMAP.md](./ROADMAP.md) for the detailed development plan.
+See [ROADMAP](./docs/roadmap.md) for the detailed development plan.
 
 ## License
 

@@ -14,7 +14,7 @@ This roadmap outlines the development plan for building a robust ERC-4337 UserOp
     - Deploy a mock or real `EntryPoint` contract code into the VM state for simulation.
 
 ## Phase 2: Execution Simulation (Validation Phase)
-- [x] **Basic Opcode Banning**: Implement `validateExecutionRules` to ban `GASPRICE`, `TIMESTAMP`, etc. (Completed in `src/validator.ts`)
+- [x] **Basic Opcode Banning**: Implement `validateExecutionRules` to ban `GASPRICE`, `TIMESTAMP`, etc. (Completed in `../src/validator.ts`)
 - [ ] **Simulation Loop**:
     - Implement `simulateValidation(userOp)` function.
     - Handle `initCode`: If present, simulate the deployment of the sender account (Factory validation).
