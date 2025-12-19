@@ -29,7 +29,7 @@ export class ValidationViolationError extends Error {
  * @returns A cleanup function to remove the listener.
  */
 export function validateExecutionRules(vm: VM, sender: Address): () => void {
-  const stepListener = async (data: InterpreterStep, next?: (error?: any) => void) => {
+  const stepListener = async (data: InterpreterStep, next?: (error?: unknown) => void) => {
     try {
       const opcode = data.opcode.code;
 
@@ -54,20 +54,20 @@ export function validateExecutionRules(vm: VM, sender: Address): () => void {
         if (stack.length > 0) {
           const key = stack[stack.length - 1]; // Peek top
           const keyHex = '0x' + key.toString(16);
-          
+
           // Check if the storage being accessed belongs to the sender
           // data.address is the address of the account whose storage is being accessed
           const currentStorageAddress = data.address;
 
           if (!currentStorageAddress.equals(sender)) {
-             console.warn(
+            console.warn(
               `[Validation Warning] Storage access violation: accessing slot ${keyHex} of contract ${currentStorageAddress.toString()} which is not the sender ${sender.toString()}`
             );
             // In strict mode, we might throw here:
             // throw new ValidationViolationError(...);
           } else {
-             // Log valid access for debugging
-             // console.log(`[Validation] Valid storage access: slot ${keyHex} of sender.`);
+            // Log valid access for debugging
+            // console.log(`[Validation] Valid storage access: slot ${keyHex} of sender.`);
           }
         }
       }
@@ -91,7 +91,7 @@ export function validateExecutionRules(vm: VM, sender: Address): () => void {
 // Example integration
 export async function runValidationExample(vm: VM, sender: Address, code: Buffer) {
   console.log('Starting validation...');
-  
+
   // 1. Attach the validator
   const cleanup = validateExecutionRules(vm, sender);
 

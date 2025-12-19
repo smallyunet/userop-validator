@@ -1,5 +1,5 @@
 import { VM, createVM } from '@ethereumjs/vm';
-import { Address, createAddressFromString } from '@ethereumjs/util';
+import { createAddressFromString } from '@ethereumjs/util';
 
 /**
  * Manages the simulation environment for UserOperation validation.

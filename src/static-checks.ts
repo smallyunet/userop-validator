@@ -1,12 +1,12 @@
 import { PackedUserOperation, ValidationResult } from './types';
-import { Address, createAddressFromString } from '@ethereumjs/util';
+import { createAddressFromString } from '@ethereumjs/util';
 
 /**
  * Validates the structure and basic types of a UserOperation.
  * This does NOT simulate execution.
  * @param userOp The PackedUserOperation to validate
  */
-export function validateUserOpStructure(userOp: any): ValidationResult {
+export function validateUserOpStructure(userOp: unknown): ValidationResult {
     const errors: string[] = [];
 
     // Check if object exists
@@ -131,7 +131,7 @@ function isValidHexNumber(hex: string): boolean {
     return /^0x[0-9a-fA-F]+$/.test(hex);
 }
 
-function isValidBigIntOrHex(value: any, allowOddLength: boolean = false): boolean {
+function isValidBigIntOrHex(value: unknown, allowOddLength: boolean = false): boolean {
     if (typeof value === 'bigint') return true;
     if (typeof value === 'number') return Number.isInteger(value) && value >= 0;
     if (typeof value === 'string') {
