@@ -2,25 +2,25 @@
 
 This roadmap outlines the development plan for building a robust ERC-4337 UserOperation validator, compliant with EIP-7562.
 
-## Phase 1: Foundation & Static Checks
-- [ ] **Type Definitions**: Define TypeScript interfaces for `UserOperation`, `PackedUserOperation`, and related structures.
-- [ ] **Static Sanity Checks**:
+## Phase 1: Foundation & Static Checks ✅
+- [x] **Type Definitions**: Define TypeScript interfaces for `UserOperation`, `PackedUserOperation`, and related structures.
+- [x] **Static Sanity Checks**:
     - Validate required fields exist and are of correct types.
     - Check `verificationGasLimit`, `callGasLimit`, `preVerificationGas` are within reasonable bounds.
     - Verify `sender` address format.
     - Validate signature length/format.
-- [ ] **VM Setup**:
+- [x] **VM Setup**:
     - Initialize a persistent `VM` instance.
     - Deploy a mock or real `EntryPoint` contract code into the VM state for simulation.
 
-## Phase 2: Execution Simulation (Validation Phase)
+## Phase 2: Execution Simulation (Validation Phase) ✅
 - [x] **Basic Opcode Banning**: Implement `validateExecutionRules` to ban `GASPRICE`, `TIMESTAMP`, etc. (Completed in `../src/validator.ts`)
-- [ ] **Simulation Loop**:
+- [x] **Simulation Loop**:
     - Implement `simulateValidation(userOp)` function.
     - Handle `initCode`: If present, simulate the deployment of the sender account (Factory validation).
     - Simulate `EntryPoint.validateUserOp` call.
     - Simulate `Paymaster.validatePaymasterUserOp` (if paymaster is used).
-- [ ] **Context-Aware Hooks**:
+- [x] **Context-Aware Hooks**:
     - Update the event hook to know *which* entity is currently executing (Sender, Factory, or Paymaster) to apply specific rules.
 
 ## Phase 3: Advanced Storage Rules (EIP-7562)

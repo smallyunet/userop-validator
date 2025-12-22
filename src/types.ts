@@ -66,3 +66,45 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
 }
+
+/**
+ * Entity types involved in UserOperation validation
+ */
+export enum EntityType {
+  /** The account making the operation */
+  SENDER = 'SENDER',
+  /** Factory contract deploying the account */
+  FACTORY = 'FACTORY',
+  /** Paymaster sponsoring the operation */
+  PAYMASTER = 'PAYMASTER',
+  /** EntryPoint contract */
+  ENTRYPOINT = 'ENTRYPOINT',
+}
+
+/**
+ * Result of simulation validation
+ */
+export interface SimulationResult {
+  /** Whether the validation passed */
+  isValid: boolean;
+  /** List of validation errors (if any) */
+  errors: string[];
+  /** List of validation violations detected during execution */
+  violations: ValidationViolation[];
+  /** Gas used during simulation */
+  gasUsed?: bigint;
+}
+
+/**
+ * Represents a specific validation violation
+ */
+export interface ValidationViolation {
+  /** Type of violation */
+  type: 'BANNED_OPCODE' | 'ILLEGAL_STORAGE_ACCESS' | 'ENTITY_RESTRICTION';
+  /** Which entity caused the violation */
+  entity: EntityType;
+  /** Detailed message */
+  message: string;
+  /** Program counter where violation occurred */
+  pc?: number;
+}
