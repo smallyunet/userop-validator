@@ -1,5 +1,5 @@
 import { VM, createVM } from '@ethereumjs/vm';
-import { Address, createAddressFromString, bytesToHex, hexToBytes } from '@ethereumjs/util';
+import { Address, createAddressFromString, hexToBytes } from '@ethereumjs/util';
 import { PackedUserOperation, SimulationResult, EntityType } from './types';
 import {
     validateExecutionRules,
@@ -99,11 +99,11 @@ export class SimulationEnvironment {
             }
 
             // Phase 2: Sender validation (validateUserOp)
-            await this.simulateSenderValidation(vm, context, userOp);
+            await this.simulateSenderValidation(vm, context);
 
             // Phase 3: Paymaster validation (if paymaster is present)
             if (paymaster) {
-                await this.simulatePaymasterValidation(vm, context, userOp.paymasterAndData);
+                await this.simulatePaymasterValidation(vm, context);
             }
 
         } catch (error) {
@@ -154,7 +154,7 @@ export class SimulationEnvironment {
     private async simulateSenderValidation(
         vm: VM,
         context: ValidationContext,
-        userOp: PackedUserOperation
+
     ): Promise<void> {
         setCurrentEntity(context, EntityType.SENDER);
 
@@ -183,15 +183,14 @@ export class SimulationEnvironment {
     private async simulatePaymasterValidation(
         vm: VM,
         context: ValidationContext,
-        paymasterAndData: string
+
     ): Promise<void> {
         setCurrentEntity(context, EntityType.PAYMASTER);
 
         const paymaster = context.paymaster!;
 
         // paymasterAndData = paymaster (20 bytes) + verificationGasLimit (16 bytes) + postOpGasLimit (16 bytes) + data
-        const paymasterBytes = hexToBytes(paymasterAndData as `0x${string}`);
-        const paymasterData = paymasterBytes.slice(52); // Skip address + gas limits
+
 
         // Encode validatePaymasterUserOp selector
         // validatePaymasterUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 maxCost)
