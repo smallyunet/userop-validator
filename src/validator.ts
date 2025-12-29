@@ -2,6 +2,7 @@ import { VM } from '@ethereumjs/vm';
 import { InterpreterStep } from '@ethereumjs/evm';
 import { Address } from '@ethereumjs/util';
 import { EntityType, ValidationViolation } from './types';
+import { validateStorageRules } from './storage-rules';
 
 // Opcode values
 const OPCODES = {
@@ -187,56 +188,37 @@ export function validateExecutionRules(vm: VM, context: ValidationContext): () =
 /**
  * Checks if storage access is allowed for the current entity
  */
+// Imported at top of file, but for replace_file_content I need to fix imports separately or assuming connection.
+// Wait, I need to add the import first or do it all in one go if I used multi_replace.
+// I'll do multi_replace to handle import and function body.
 function checkStorageAccess(
   context: ValidationContext,
   storageAddress: Address,
   slot: string,
   pc: number
 ): ValidationViolation | null {
-  const { entity, sender, factory, paymaster, entryPoint } = context;
+  const { entity, sender, factory, paymaster } = context;
 
-  // EntryPoint storage is always allowed (for deposit info)
-  if (storageAddress.equals(entryPoint)) {
+  const result = validateStorageRules(
+    entity,
+    sender,
+    storageAddress,
+    slot,
+    factory,
+    paymaster
+  );
+
+  if (result.allowed) {
     return null;
   }
 
-  switch (entity) {
-    case EntityType.SENDER:
-      // Sender can access its own storage
-      if (storageAddress.equals(sender)) {
-        return null;
-      }
-      break;
-
-    case EntityType.FACTORY:
-      // Factory can access its own storage
-      if (factory && storageAddress.equals(factory)) {
-        return null;
-      }
-      // Factory can access sender storage (for deployment)
-      if (storageAddress.equals(sender)) {
-        return null;
-      }
-      break;
-
-    case EntityType.PAYMASTER:
-      // Paymaster can access its own storage
-      if (paymaster && storageAddress.equals(paymaster)) {
-        return null;
-      }
-      break;
-
-    case EntityType.ENTRYPOINT:
-      // EntryPoint has full access
-      return null;
-  }
-
-  // Storage access not allowed
   return {
     type: 'ILLEGAL_STORAGE_ACCESS',
     entity,
-    message: `Illegal storage access: ${entity} accessing slot ${slot} of ${storageAddress.toString()}`,
+    message: result.reason || `Illegal storage access detected`,
     pc,
+    storageAddress: storageAddress.toString(),
+    slot,
   };
 }
 

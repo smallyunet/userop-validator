@@ -12,47 +12,47 @@ export interface PackedUserOperation {
    * The account making the operation
    */
   sender: HexString;
-  
+
   /**
    * The nonce of the account.
    * High 192 bits are key, low 64 bits are sequence.
    */
   nonce: bigint | HexString;
-  
+
   /**
    * The initCode of the account (needed if account is not yet on-chain)
    */
   initCode: HexString;
-  
+
   /**
    * The data to execute
    */
   callData: HexString;
-  
+
   /**
    * Packed account gas limits:
    * verificationGasLimit (16 bytes) | callGasLimit (16 bytes)
    */
   accountGasLimits: HexString;
-  
+
   /**
    * Packed pre-verification gas:
    * preVerificationGas (byte-packed)
    */
   preVerificationGas: bigint | HexString;
-  
+
   /**
    * Packed gas fees:
    * maxPriorityFeePerGas (16 bytes) | maxFeePerGas (16 bytes)
    */
   gasFees: HexString;
-  
+
   /**
    * Paymaster and data:
    * paymaster + paymasterVerificationGasLimit + paymasterPostOpGasLimit + paymasterData
    */
   paymasterAndData: HexString;
-  
+
   /**
    * Signature of the operation
    */
@@ -107,4 +107,8 @@ export interface ValidationViolation {
   message: string;
   /** Program counter where violation occurred */
   pc?: number;
+  /** Storage address accessed (for storage violations) */
+  storageAddress?: string;
+  /** Storage slot accessed (for storage violations) */
+  slot?: string;
 }

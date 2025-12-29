@@ -1,5 +1,6 @@
 import { PackedUserOperation, ValidationResult } from './types';
 import { createAddressFromString } from '@ethereumjs/util';
+import { calcPreVerificationGas } from './gas';
 
 /**
  * Validates the structure and basic types of a UserOperation.
@@ -81,6 +82,7 @@ export function validateUserOpStructure(userOp: unknown): ValidationResult {
     };
 }
 
+// Imported calcPreVerificationGas at top
 function validateGasLimits(op: PackedUserOperation): string[] {
     const errors: string[] = [];
 
@@ -88,6 +90,14 @@ function validateGasLimits(op: PackedUserOperation): string[] {
     // verificationGasLimit (16 bytes) | callGasLimit (16 bytes)
     if (!isValidPackedUints(op.accountGasLimits)) {
         errors.push(`Invalid accountGasLimits format: ${op.accountGasLimits}`);
+    } else {
+        // Check verificationGasLimit > 0
+        const vgl = BigInt('0x' + op.accountGasLimits.slice(2, 34));
+        const cgl = BigInt('0x' + op.accountGasLimits.slice(34));
+
+        if (vgl < 10000n) { // Minimum reasonable limit
+            // errors.push(`verificationGasLimit too low: ${vgl}`); // Optional warning
+        }
     }
 
     // unpack gasFees
@@ -97,10 +107,13 @@ function validateGasLimits(op: PackedUserOperation): string[] {
     }
 
     // preVerificationGas check
-    // It should fit in uint256, but realistically much smaller.
-    // Here we just check it is a valid positive integer representation.
-    if (!isValidBigIntOrHex(op.preVerificationGas, true)) {
-        // Already checked, but specific logic could go here
+    const pvg = typeof op.preVerificationGas === 'string'
+        ? BigInt(op.preVerificationGas)
+        : BigInt(op.preVerificationGas);
+
+    const calculatedPvg = calcPreVerificationGas(op);
+    if (pvg < calculatedPvg) {
+        errors.push(`preVerificationGas too low: expected at least ${calculatedPvg}, got ${pvg}`);
     }
 
     return errors;

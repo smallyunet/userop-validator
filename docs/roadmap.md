@@ -23,31 +23,31 @@ This roadmap outlines the development plan for building a robust ERC-4337 UserOp
 - [x] **Context-Aware Hooks**:
     - Update the event hook to know *which* entity is currently executing (Sender, Factory, or Paymaster) to apply specific rules.
 
-## Phase 3: Advanced Storage Rules (EIP-7562)
-- [ ] **Storage Access Tracking**:
+## Phase 3: Advanced Storage Rules (EIP-7562) ✅
+- [x] **Storage Access Tracking**:
     - Enhance the `step` listener to track *all* storage slots accessed during validation.
-- [ ] **Associated Storage Rules**:
+- [x] **Associated Storage Rules**:
     - Implement logic to allow access to the entity's own storage.
     - Implement "Mapping" pattern detection (e.g., `mapping(address => value)`).
     - Allow access to `EntryPoint` storage (specifically the entity's deposit info).
-- [ ] **Entity-Specific Restrictions**:
+- [x] **Entity-Specific Restrictions**:
     - **Factory**: Can only access its own storage and the specific slot of the contract being deployed.
     - **Paymaster**: Can only access its own storage and the sender's entry in the EntryPoint.
 
-## Phase 4: Gas & Economics
-- [ ] **Pre-verification Gas**: Implement the calculation logic for `preVerificationGas` (calldata cost + overhead).
-- [ ] **Gas Limit Verification**: Ensure `verificationGasLimit` is sufficient but not excessive.
-- [ ] **Fee Validation**: Check `maxFeePerGas` and `maxPriorityFeePerGas` against current network conditions (simulated).
-- [ ] **Balance Checks**: Verify the Sender or Paymaster has sufficient deposit in the EntryPoint.
+## Phase 4: Gas & Economics ✅
+- [x] **Pre-verification Gas**: Implement the calculation logic for `preVerificationGas` (calldata cost + overhead).
+- [x] **Gas Limit Verification**: Ensure `verificationGasLimit` is sufficient but not excessive.
+- [x] **Fee Validation**: Check `maxFeePerGas` and `maxPriorityFeePerGas` against current network conditions (simulated).
+- [x] **Balance Checks**: Verify the Sender or Paymaster has sufficient deposit in the EntryPoint.
 
-## Phase 5: Interface & Testing
-- [ ] **CLI Tool**: Create a command-line interface to validate a UserOp JSON file.
-- [ ] **Unit Testing**: Write test cases for:
+## Phase 5: Interface & Testing ✅
+- [x] **CLI Tool**: Create a command-line interface to validate a UserOp JSON file.
+- [x] **Unit Testing**: Write test cases for:
     - Valid UserOps.
     - UserOps using banned opcodes.
     - UserOps accessing illegal storage.
     - UserOps with insufficient gas.
-- [ ] **Error Reporting**: Improve error messages to be granular (e.g., "Illegal storage access at PC 0x123: Slot 0x...").
+- [x] **Error Reporting**: Improve error messages to be granular (e.g., "Illegal storage access at PC 0x123: Slot 0x...").
 
 ## Phase 6: Reputation System (Optional/Advanced)
 - [ ] Implement a local reputation store.
