@@ -1,5 +1,5 @@
-import { Address, setLengthLeft } from '@ethereumjs/util';
-import { keccak256 } from 'ethereum-cryptography/keccak';
+import { Address } from '@ethereumjs/util';
+// import { keccak256 } from 'ethereum-cryptography/keccak';
 import { EntityType } from './types';
 
 /**
@@ -13,7 +13,9 @@ import { EntityType } from './types';
  * keccak256(h(k) . p)
  * where k is the key (address), and p is the position (slot index).
  */
-export function isSlotAssociatedWith(slot: string, address: Address): boolean {
+export function isSlotAssociatedWith(_slot: string, _address: Address): boolean {
+    void _slot;
+    void _address;
     // const slotBuffer = Buffer.from(slot.replace('0x', ''), 'hex');
     // const addressBuffer = address.toBytes();
 

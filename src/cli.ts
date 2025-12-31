@@ -2,7 +2,6 @@
 import fs from 'fs';
 import path from 'path';
 import { validateUserOpStructure } from './static-checks';
-import { PackedUserOperation } from './types';
 
 async function main() {
     const args = process.argv.slice(2);
@@ -39,8 +38,9 @@ async function main() {
         // We'll wire up simulation if possible, but initializing a VM state from scratch/fork is complex.
         // For now, static checks + basic structure is a good start.
 
-    } catch (err: any) {
-        console.error(`Error processing file: ${err.message}`);
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`Error processing file: ${message}`);
         process.exit(1);
     }
 }

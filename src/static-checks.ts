@@ -93,7 +93,7 @@ function validateGasLimits(op: PackedUserOperation): string[] {
     } else {
         // Check verificationGasLimit > 0
         const vgl = BigInt('0x' + op.accountGasLimits.slice(2, 34));
-        const cgl = BigInt('0x' + op.accountGasLimits.slice(34));
+        // const cgl = BigInt('0x' + op.accountGasLimits.slice(34)); // unused
 
         if (vgl < 10000n) { // Minimum reasonable limit
             // errors.push(`verificationGasLimit too low: ${vgl}`); // Optional warning
