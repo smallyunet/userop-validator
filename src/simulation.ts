@@ -1,5 +1,6 @@
 import { VM, createVM } from '@ethereumjs/vm';
-import { Address, createAddressFromString, hexToBytes } from '@ethereumjs/util';
+import { Address, Account, createAddressFromString, hexToBytes } from '@ethereumjs/util';
+import { JsonRpcProvider } from 'ethers';
 import { PackedUserOperation, SimulationResult, EntityType } from './types';
 import {
     validateExecutionRules,
@@ -20,10 +21,14 @@ export class SimulationEnvironment {
     private vm: VM | null = null;
     private entryPointAddress: Address;
     private reputationStore: ReputationStore;
+    private provider: JsonRpcProvider | null = null;
 
-    constructor(entryPointAddress?: string) {
-        this.entryPointAddress = createAddressFromString(entryPointAddress || ENTRYPOINT_ADDRESS);
+    constructor(options?: { entryPointAddress?: string; rpcUrl?: string }) {
+        this.entryPointAddress = createAddressFromString(options?.entryPointAddress || ENTRYPOINT_ADDRESS);
         this.reputationStore = new InMemoryReputationStore();
+        if (options?.rpcUrl) {
+            this.provider = new JsonRpcProvider(options.rpcUrl);
+        }
     }
 
     /**
@@ -89,6 +94,11 @@ export class SimulationEnvironment {
         // Parse factory and paymaster from packed fields
         const factory = this.parseFactory(userOp.initCode);
         const paymaster = this.parsePaymaster(userOp.paymasterAndData);
+
+        // Prefetch state if RPC is available
+        if (this.provider) {
+            await this.prefetchState(sender, factory, paymaster);
+        }
 
         // 0. Reputation Check
         if (paymaster) {
@@ -281,5 +291,67 @@ export class SimulationEnvironment {
         // First 20 bytes
         const paymasterHex = paymasterAndData.slice(0, 42);
         return createAddressFromString(paymasterHex);
+    }
+
+    /**
+     * Prefetches state for critical accounts from RPC and loads into VM
+     */
+    private async prefetchState(sender: Address, factory?: Address, paymaster?: Address): Promise<void> {
+        if (!this.provider) return;
+        const vm = this.getVM();
+
+        const accounts = [sender, factory, paymaster].filter((a): a is Address => !!a);
+
+        for (const account of accounts) {
+            const address = account.toString();
+
+            // Fetch balance, nonce, and code
+            const [balanceHex, nonceHex, codeHex] = await Promise.all([
+                this.provider.send('eth_getBalance', [address, 'latest']),
+                this.provider.send('eth_getTransactionCount', [address, 'latest']),
+                this.provider.send('eth_getCode', [address, 'latest'])
+            ]);
+
+            const balance = BigInt(balanceHex);
+            const nonce = BigInt(nonceHex);
+            const code = hexToBytes(codeHex);
+
+            // Put into VM state
+            const acct = await vm.stateManager.getAccount(account);
+            if (acct) {
+                acct.balance = balance;
+                acct.nonce = nonce;
+                await vm.stateManager.putAccount(account, acct);
+            } else {
+                // Should create if not exists, but getAccount usually returns empty account if not found?
+                // ethereumjs getAccount returns Account object, possibly empty.
+                // Let's force update.
+                // Actually putAccount requires an Account object.
+                // We need to fetch it first (which returns empty one) then update.
+            }
+            // Correct way for ethereumjs-vm v7/v8?
+            // vm.stateManager.putAccountAddress(address, accountObj)
+            // It seems easier to use the Account object methods.
+
+            // Wait, for simplicity let's use `modifyAccountFields` if available, or just putAccount.
+            // With ethereumjs/vm, we can interact with state manager.
+
+            // Standard flow:
+            let accountObj = await vm.stateManager.getAccount(account);
+            if (!accountObj) {
+                // If account doesn't exist, create a new one
+                // Account constructor: public constructor(nonce?: bigint, balance?: bigint, stateRoot?: Uint8Array, codeHash?: Uint8Array)
+                accountObj = new Account(nonce, balance);
+            } else {
+                accountObj.balance = balance;
+                accountObj.nonce = nonce;
+            }
+
+            await vm.stateManager.putAccount(account, accountObj);
+
+            if (code.length > 0) {
+                await vm.stateManager.putCode(account, code);
+            }
+        }
     }
 }

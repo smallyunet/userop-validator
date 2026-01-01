@@ -8,11 +8,19 @@ import { PackedUserOperation } from './types';
 async function main() {
     const args = process.argv.slice(2);
     if (args.length === 0) {
-        console.error('Usage: userop-validator <path-to-userop.json>');
+        console.error('Usage: userop-validator <path-to-userop.json> [--rpc <rpc-url>]');
         process.exit(1);
     }
 
     const filePath = path.resolve(process.cwd(), args[0]);
+
+    // Parse Optional RPC argument
+    let rpcUrl: string | undefined;
+    const rpcIndex = args.indexOf('--rpc');
+    if (rpcIndex !== -1 && rpcIndex + 1 < args.length) {
+        rpcUrl = args[rpcIndex + 1];
+    }
+
     if (!fs.existsSync(filePath)) {
         console.error(`File not found: ${filePath}`);
         process.exit(1);
@@ -38,7 +46,10 @@ async function main() {
         const runSimulation = args.includes('--simulate');
         if (runSimulation) {
             console.log('Starting Simulation...');
-            const env = new SimulationEnvironment();
+            if (rpcUrl) {
+                console.log(`Using RPC connection: ${rpcUrl}`);
+            }
+            const env = new SimulationEnvironment({ rpcUrl });
             await env.init();
 
             // We assume userOp is valid PackedUserOperation since static checks passed

@@ -52,3 +52,8 @@ This roadmap outlines the development plan for building a robust ERC-4337 UserOp
 ## Phase 6: Reputation System (Optional/Advanced) ✅
 - [x] Implement a local reputation store.
 - [x] Track throttling/banning for Paymasters and Factories based on validation failures.
+
+## Phase 7: Real-world Simulation (State Forking) ✅
+- [x] **RPC Integration**: Fetch account state (balance, nonce, code) from a remote RPC node.
+- [x] **State Forking**: Prefetch and inject real-world state into the VM before simulation.
+- [x] **CLI Support**: Add `--rpc` flag for validating against live networks.
