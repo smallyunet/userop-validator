@@ -4,15 +4,14 @@ import path from 'path';
 import { validateUserOpStructure } from './static-checks';
 import { SimulationEnvironment } from './simulation';
 import { PackedUserOperation } from './types';
+import { JsonRpcServer } from './server';
 
 async function main() {
     const args = process.argv.slice(2);
     if (args.length === 0) {
-        console.error('Usage: userop-validator <path-to-userop.json> [--rpc <rpc-url>]');
+        console.error('Usage: \n  userop-validator <path-to-userop.json> [--rpc <rpc-url>]\n  userop-validator serve --port <number> [--rpc <rpc-url>]');
         process.exit(1);
     }
-
-    const filePath = path.resolve(process.cwd(), args[0]);
 
     // Parse Optional RPC argument
     let rpcUrl: string | undefined;
@@ -20,6 +19,26 @@ async function main() {
     if (rpcIndex !== -1 && rpcIndex + 1 < args.length) {
         rpcUrl = args[rpcIndex + 1];
     }
+
+    // Check for "serve" command
+    if (args[0] === 'serve') {
+        let port = 3000;
+        const portIndex = args.indexOf('--port');
+        if (portIndex !== -1 && portIndex + 1 < args.length) {
+            port = parseInt(args[portIndex + 1], 10);
+        }
+
+        console.log(`Starting JSON-RPC Server on port ${port}...`);
+        const server = new JsonRpcServer({
+            port,
+            rpcUrl
+        });
+        await server.start();
+        // Keep process alive
+        return;
+    }
+
+    const filePath = path.resolve(process.cwd(), args[0]);
 
     if (!fs.existsSync(filePath)) {
         console.error(`File not found: ${filePath}`);

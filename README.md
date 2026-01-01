@@ -35,8 +35,11 @@ npx ts-node src/cli.ts path/to/userop.json
 # With State Forking (RPC)
 npx ts-node src/cli.ts path/to/userop.json --rpc https://eth-sepolia.g.alchemy.com/v2/YOUR-API-KEY
 
+# Server Mode (JSON-RPC 2.0)
+npx ts-node src/cli.ts serve --port 3000
+
 # Or if built
-node dist/cli.js path/to/userop.json --rpc ...
+node dist/cli.js serve --port 3000
 ```
 
 ### Library

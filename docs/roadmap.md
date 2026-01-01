@@ -57,3 +57,8 @@ This roadmap outlines the development plan for building a robust ERC-4337 UserOp
 - [x] **RPC Integration**: Fetch account state (balance, nonce, code) from a remote RPC node.
 - [x] **State Forking**: Prefetch and inject real-world state into the VM before simulation.
 - [x] **CLI Support**: Add `--rpc` flag for validating against live networks.
+
+## Phase 8: JSON-RPC API Service ✅
+- [x] **Server**: Implement a lightweight JSON-RPC 2.0 server using Express.
+- [x] **API Endpoint**: Expose `eth_validateUserOperation`.
+- [x] **CLI Command**: Add `serve` command to start the validator as a microservice.

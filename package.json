@@ -1,6 +1,6 @@
 {
   "name": "userop-validator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A robust ERC-4337 UserOperation validator compliant with EIP-7562",
   "main": "dist/index.js",
   "scripts": {
@@ -20,6 +20,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -36,6 +39,9 @@
     "@ethereumjs/evm": "^10.0.0",
     "@ethereumjs/util": "^10.0.0",
     "@ethereumjs/vm": "^10.0.0",
-    "ethers": "^6.0.0"
+    "body-parser": "^2.2.1",
+    "cors": "^2.8.5",
+    "ethers": "^6.0.0",
+    "express": "^5.2.1"
   }
 }
