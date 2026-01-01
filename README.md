@@ -12,6 +12,7 @@ This project implements a standalone validator for ERC-4337 UserOperations. It u
 - **Opcode Restrictions**: Banning opcodes like `GASPRICE`, `TIMESTAMP`, `BLOCKHASH`, etc.
 - **Storage Access Rules**: Enforcing storage access restrictions for Senders, Factories, and Paymasters per EIP-7562.
 - **Gas Limits**: Validating `verificationGasLimit`, `preVerificationGas` (including calculation), and fee integrity.
+- **Reputation System**: Local reputation tracking to throttle or ban entities causing validation failures (DoS protection).
 
 ## Installation
 
@@ -59,6 +60,18 @@ const context = createValidationContext({
 const cleanup = validateExecutionRules(vm, context);
 // ... run validation step ...
 cleanup();
+
+// 3. Reputation (Optional)
+// You can use the SimulationEnvironment which handles reputation automatically
+import { SimulationEnvironment } from './src/simulation';
+const env = new SimulationEnvironment();
+await env.init();
+const simulationResult = await env.simulateValidation(userOp);
+if (!simulationResult.isValid) {
+    if (simulationResult.errors.some(e => e.includes('BANNED'))) {
+         console.warn("Entity is BANNED!");
+    }
+}
 ```
 
 ### Development

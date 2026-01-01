@@ -7,6 +7,7 @@ import {
     setCurrentEntity,
     ValidationContext
 } from './validator';
+import { ReputationStore, InMemoryReputationStore, ReputationStatus } from './reputation';
 
 // Standard EntryPoint address (v0.7)
 const ENTRYPOINT_ADDRESS = '0x0000000071727De22E5E9d8BAf0edAc6f37da032';
@@ -18,9 +19,11 @@ const ENTRYPOINT_ADDRESS = '0x0000000071727De22E5E9d8BAf0edAc6f37da032';
 export class SimulationEnvironment {
     private vm: VM | null = null;
     private entryPointAddress: Address;
+    private reputationStore: ReputationStore;
 
     constructor(entryPointAddress?: string) {
         this.entryPointAddress = createAddressFromString(entryPointAddress || ENTRYPOINT_ADDRESS);
+        this.reputationStore = new InMemoryReputationStore();
     }
 
     /**
@@ -40,6 +43,13 @@ export class SimulationEnvironment {
             throw new Error('SimulationEnvironment not initialized. Call init() first.');
         }
         return this.vm;
+    }
+
+    /**
+     * Returns the reputation store instance
+     */
+    getReputationStore(): ReputationStore {
+        return this.reputationStore;
     }
 
     /**
@@ -80,6 +90,26 @@ export class SimulationEnvironment {
         const factory = this.parseFactory(userOp.initCode);
         const paymaster = this.parsePaymaster(userOp.paymasterAndData);
 
+        // 0. Reputation Check
+        if (paymaster) {
+            const status = this.reputationStore.getStatus(paymaster);
+            if (status === ReputationStatus.BANNED) {
+                return { isValid: false, errors: [`Paymaster ${paymaster} is BANNED`], violations: [] };
+            }
+            if (status === ReputationStatus.THROTTLED) {
+                return { isValid: false, errors: [`Paymaster ${paymaster} is THROTTLED`], violations: [] };
+            }
+        }
+        if (factory) {
+            const status = this.reputationStore.getStatus(factory);
+            if (status === ReputationStatus.BANNED) {
+                return { isValid: false, errors: [`Factory ${factory} is BANNED`], violations: [] };
+            }
+            if (status === ReputationStatus.THROTTLED) {
+                return { isValid: false, errors: [`Factory ${factory} is THROTTLED`], violations: [] };
+            }
+        }
+
         // Create validation context
         const context = createValidationContext({
             sender,
@@ -114,6 +144,24 @@ export class SimulationEnvironment {
             }
         } finally {
             cleanup();
+        }
+
+        // Update Reputation
+        // We penalize if the specific entity caused a violation.
+        // If there are general errors, we might not attribute them easily without more fine-grained error handling,
+        // but for now, we rely on context.violations having the entity set.
+
+        if (paymaster) {
+            const paymasterViolations = context.violations.filter(v => v.entity === EntityType.PAYMASTER);
+            const isPaymasterValid = paymasterViolations.length === 0;
+            // Also consider errors if we tracked which phase they occurred in, but for now just violations.
+            this.reputationStore.updateStatus(paymaster, isPaymasterValid);
+        }
+
+        if (factory) {
+            const factoryViolations = context.violations.filter(v => v.entity === EntityType.FACTORY);
+            const isFactoryValid = factoryViolations.length === 0;
+            this.reputationStore.updateStatus(factory, isFactoryValid);
         }
 
         return {

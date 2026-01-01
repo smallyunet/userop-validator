@@ -49,6 +49,6 @@ This roadmap outlines the development plan for building a robust ERC-4337 UserOp
     - UserOps with insufficient gas.
 - [x] **Error Reporting**: Improve error messages to be granular (e.g., "Illegal storage access at PC 0x123: Slot 0x...").
 
-## Phase 6: Reputation System (Optional/Advanced)
-- [ ] Implement a local reputation store.
-- [ ] Track throttling/banning for Paymasters and Factories based on validation failures.
+## Phase 6: Reputation System (Optional/Advanced) ✅
+- [x] Implement a local reputation store.
+- [x] Track throttling/banning for Paymasters and Factories based on validation failures.
