@@ -72,6 +72,10 @@ export function validateUserOpStructure(userOp: unknown): ValidationResult {
         errors.push(`Invalid preVerificationGas format: ${op.preVerificationGas}`);
     }
 
+    if (errors.length > 0) {
+        return { isValid: false, errors };
+    }
+
     // 5. Gas Limit Validation
     const gasLimitErrors = validateGasLimits(op);
     errors.push(...gasLimitErrors);
