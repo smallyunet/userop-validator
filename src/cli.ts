@@ -2,6 +2,8 @@
 import fs from 'fs';
 import path from 'path';
 import { validateUserOpStructure } from './static-checks';
+import { SimulationEnvironment } from './simulation';
+import { PackedUserOperation } from './types';
 
 async function main() {
     const args = process.argv.slice(2);
@@ -30,6 +32,26 @@ async function main() {
             process.exit(1);
         } else {
             console.log('Static Validation Passed ✅');
+        }
+
+        // 2. Simulation
+        const runSimulation = args.includes('--simulate');
+        if (runSimulation) {
+            console.log('Starting Simulation...');
+            const env = new SimulationEnvironment();
+            await env.init();
+
+            // We assume userOp is valid PackedUserOperation since static checks passed
+            const result = await env.simulateValidation(userOp as PackedUserOperation);
+
+            if (result.isValid) {
+                console.log('Simulation Passed ✅');
+            } else {
+                console.error('Simulation Failed ❌');
+                result.errors.forEach(err => console.error(`[Error] ${err}`));
+                result.violations.forEach(v => console.error(`[Violation] ${v.message} at PC ${v.pc}`));
+                process.exit(1);
+            }
         }
 
         // 2. Simulation (TODO: Need to set up VM and State)
