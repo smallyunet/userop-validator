@@ -1,6 +1,6 @@
 {
   "name": "userop-validator",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A robust ERC-4337 UserOperation validator compliant with EIP-7562",
   "main": "dist/index.js",
   "scripts": {

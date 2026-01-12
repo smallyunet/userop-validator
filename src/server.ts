@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { SimulationEnvironment } from './simulation';
-import { PackedUserOperation } from './types';
+import { PackedUserOperation, ValidationErrorCode, BatchValidationResult } from './types';
 
 export interface ServerOptions {
     port: number;
@@ -63,6 +63,9 @@ export class JsonRpcServer {
                 case 'eth_validateUserOperation':
                     result = await this.handleValidateUserOp(params);
                     break;
+                case 'eth_validateUserOperations':
+                    result = await this.handleValidateUserOps(params);
+                    break;
                 case 'eth_chainId': // Helpful for tools checking connection
                     result = '0x1'; // Default to Mainnet for now, or match upstream if possible
                     break;
@@ -100,29 +103,108 @@ export class JsonRpcServer {
         }
 
         const userOp = params[0] as PackedUserOperation;
-        // Optional: validate entryPoint and chainId matches?
 
         // Run Simulation
         const result = await this.simulationEnv.simulateValidation(userOp);
 
         if (!result.isValid) {
-            // Transform violations into RPC error message if needed, 
-            // but typical eth_validateUserOperation usually returns true or reverts?
-            // "The result is boolean true if the UserOperation is valid, or an error if invalid."
-            // But JSON-RPC convention: result=true if success. If fail, maybe return false or Throw Error?
-            // EIP-4337 bundlers usually behave:
-            // - If valid: result = true (or void?)
-            // - If invalid: JSON-RPC Error object with code -32500 etc.
-
-            // Let's throw an Error with details to return JSON-RPC Error
+            // Map violations to EIP-4337 standardized error codes
+            const errorCode = this.mapViolationsToErrorCode(result);
             const details = [
                 ...result.errors,
                 ...result.violations.map(v => `${v.message} (PC: ${v.pc})`)
             ].join('; ');
 
-            throw new Error(`Validation Failed: ${details}`);
+            const error = new Error(`Validation Failed: ${details}`) as any;
+            error.code = errorCode;
+            throw error;
         }
 
         return true;
+    }
+
+    /**
+     * Handle batch validation of multiple UserOperations
+     * Returns array of results for each UserOp
+     */
+    private async handleValidateUserOps(params: any[]): Promise<BatchValidationResult[]> {
+        if (!params || params.length < 1 || !Array.isArray(params[0])) {
+            throw new Error('Missing params: [[userOp1, userOp2, ...], entryPoint?, chainId?]');
+        }
+
+        const userOps = params[0] as PackedUserOperation[];
+        const results: BatchValidationResult[] = [];
+
+        for (let i = 0; i < userOps.length; i++) {
+            const userOp = userOps[i];
+            try {
+                const result = await this.simulationEnv.simulateValidation(userOp);
+
+                if (result.isValid) {
+                    results.push({
+                        index: i,
+                        isValid: true
+                    });
+                } else {
+                    const errorCode = this.mapViolationsToErrorCode(result);
+                    const details = [
+                        ...result.errors,
+                        ...result.violations.map(v => `${v.message} (PC: ${v.pc})`)
+                    ].join('; ');
+
+                    results.push({
+                        index: i,
+                        isValid: false,
+                        errorCode,
+                        error: details
+                    });
+                }
+            } catch (err: any) {
+                results.push({
+                    index: i,
+                    isValid: false,
+                    errorCode: ValidationErrorCode.REJECTED_BY_EP,
+                    error: err.message || 'Unknown error'
+                });
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Map validation violations to standardized EIP-4337 error codes
+     */
+    private mapViolationsToErrorCode(result: { errors: string[]; violations: any[] }): ValidationErrorCode {
+        // Check violations first for specific codes
+        for (const v of result.violations) {
+            if (v.type === 'BANNED_OPCODE') {
+                return ValidationErrorCode.BANNED_OPCODE;
+            }
+            if (v.type === 'ILLEGAL_STORAGE_ACCESS') {
+                return ValidationErrorCode.INVALID_STORAGE;
+            }
+        }
+
+        // Check error messages for hints
+        const errorText = result.errors.join(' ').toLowerCase();
+        if (errorText.includes('paymaster')) {
+            return ValidationErrorCode.REJECTED_BY_PAYMASTER;
+        }
+        if (errorText.includes('throttle')) {
+            return ValidationErrorCode.ENTITY_THROTTLED;
+        }
+        if (errorText.includes('banned') || errorText.includes('ban')) {
+            return ValidationErrorCode.ENTITY_BANNED;
+        }
+        if (errorText.includes('signature')) {
+            return ValidationErrorCode.INVALID_SIGNATURE;
+        }
+        if (errorText.includes('nonce')) {
+            return ValidationErrorCode.INVALID_NONCE;
+        }
+
+        // Default to EntryPoint rejection
+        return ValidationErrorCode.REJECTED_BY_EP;
     }
 }

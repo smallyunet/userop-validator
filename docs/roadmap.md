@@ -62,3 +62,9 @@ This roadmap outlines the development plan for building a robust ERC-4337 UserOp
 - [x] **Server**: Implement a lightweight JSON-RPC 2.0 server using Express.
 - [x] **API Endpoint**: Expose `eth_validateUserOperation`.
 - [x] **CLI Command**: Add `serve` command to start the validator as a microservice.
+
+## Phase 9: Developer Experience & Standards ✅
+- [x] **Batch Validation**: Add `eth_validateUserOperations` for validating multiple UserOperations in one call.
+- [x] **Error Codes**: Implement EIP-4337 standardized error codes (-32500 to -32507).
+- [x] **Execution Tracer**: Add optional `ExecutionTrace` type for detailed debugging output.
+- [x] **Bug Fixes**: Fixed constructor signature in simulation tests.

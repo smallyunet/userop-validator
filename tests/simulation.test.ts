@@ -21,7 +21,7 @@ describe('SimulationEnvironment', () => {
 
         it('should accept custom EntryPoint address', () => {
             const customEntryPoint = '0x1234567890123456789012345678901234567890';
-            const customSimEnv = new SimulationEnvironment(customEntryPoint);
+            const customSimEnv = new SimulationEnvironment({ entryPointAddress: customEntryPoint });
             // Should not throw during construction
             expect(customSimEnv).toBeDefined();
         });
