@@ -1,16 +1,26 @@
 #!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
+import pkg from '../package.json';
 import { validateUserOpStructure } from './static-checks';
 import { SimulationEnvironment } from './simulation';
 import { PackedUserOperation } from './types';
 import { JsonRpcServer } from './server';
 
+function printHelp(): void {
+    console.log(`UserOp Validator (v${(pkg as any).version})\n\nUsage:\n  userop-validator <path-to-userop.json> [--simulate] [--rpc <rpc-url>]\n  userop-validator serve --port <number> [--rpc <rpc-url>]\n\nOptions:\n  --simulate           Run full VM simulation (in addition to static checks)\n  --rpc <url>          Enable state forking via upstream RPC\n  --port <number>      Server port (serve mode only)\n  -h, --help           Show help\n  -v, --version        Print version\n`);
+}
+
 async function main() {
     const args = process.argv.slice(2);
-    if (args.length === 0) {
-        console.error('Usage: \n  userop-validator <path-to-userop.json> [--rpc <rpc-url>]\n  userop-validator serve --port <number> [--rpc <rpc-url>]');
-        process.exit(1);
+    if (args.length === 0 || args.includes('-h') || args.includes('--help')) {
+        printHelp();
+        process.exit(args.length === 0 ? 1 : 0);
+    }
+
+    if (args.includes('-v') || args.includes('--version')) {
+        console.log((pkg as any).version);
+        process.exit(0);
     }
 
     // Parse Optional RPC argument
@@ -49,7 +59,7 @@ async function main() {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
         const userOp = JSON.parse(fileContent);
 
-        console.log(`Validating UserUserOp from: ${filePath}`);
+        console.log(`Validating UserOp from: ${filePath}`);
 
         // 1. Static Checks
         const staticResult = validateUserOpStructure(userOp);

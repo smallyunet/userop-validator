@@ -1,11 +1,18 @@
 {
   "name": "userop-validator",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A robust ERC-4337 UserOperation validator compliant with EIP-7562",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "userop-validator": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/cli.js serve --port 3000",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\""

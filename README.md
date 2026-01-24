@@ -32,6 +32,9 @@ You can validate a UserOperation JSON file directly using the CLI:
 # Run via npx
 npx ts-node src/cli.ts path/to/userop.json
 
+# Full simulation (VM)
+npx ts-node src/cli.ts path/to/userop.json --simulate
+
 # With State Forking (RPC)
 npx ts-node src/cli.ts path/to/userop.json --rpc https://eth-sepolia.g.alchemy.com/v2/YOUR-API-KEY
 
@@ -40,6 +43,11 @@ npx ts-node src/cli.ts serve --port 3000
 
 # Or if built
 node dist/cli.js serve --port 3000
+
+# Installed globally
+npm install -g userop-validator
+userop-validator --help
+userop-validator path/to/userop.json --simulate
 ```
 
 ### Library
